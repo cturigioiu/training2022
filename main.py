@@ -1,71 +1,50 @@
-from rest.rest import Rest
-from constants.rest_const import rest_const
+from rest.users_rest import UsersRest
+from rest.comments_rest import CommentsRest
+from rest.posts_rest import PostsRest
+from rest.todos_rest import TodosRest
 from parsers.json_parser import json_to_table
 from utils.dict_utils import dict_order, take_duedate
-import os
 
 if __name__ == '__main__':
-    token = os.environ['gorest_token']
-    gorest = Rest(base_url=rest_const.BASE_URL, version=rest_const.API_VERSION, token=token)
+    user_rest = UsersRest()
+    post_rest = PostsRest()
+    comment_rest = CommentsRest()
+    todo_rest = TodosRest()
 
     # 1
-    # for res in ['users', 'posts', 'comments', 'todos']:
-    #     response = gorest.get(resource=res, token=token)
-    #     response = json_to_table(response)
-    #     print(response)
+    print(json_to_table(user_rest.retrieve_users()))
+    print(json_to_table(post_rest.retrieve_posts()))
+    print(json_to_table(comment_rest.retrieve_comments()))
+    print(json_to_table(todo_rest.retrieve_todos()))
 
     # 2     # 3
-    # user_data = {
-    #     'name': 'Test User 9',
-    #     'gender': 'male',
-    #     'email': 'test.user9@test.com',
-    #     'status': 'active'
-    # }
-    # response = gorest.post(resource='users', data=user_data, token=token)
+    user_rest.create_user(name='Test User 9', gender='male', email='test.user9@test.com', status='active')
 
     # 4
-
-    # print(gorest.search_by_name(token=token, name='Test User 9'))
+    print(user_rest.search_by_name(name='Test User 9'))
 
     # 5
-    # options = {
-    #     'query': {
-    #         'status': 'active'
-    #     }
-    # }
-    # print(json_to_table(gorest.get(resource='users', token=token, options=options)))
+    print(json_to_table(user_rest.filter_users(status='active')))
 
     # 6
-    # print(json_to_table(gorest.search_middlename(token=token, count=5)))
+    print(json_to_table(user_rest.search_by_middlename(count=5)))
 
     # 7
-    # desired_id = gorest.search_by_name(name='Test User 9')[0]
-    # data = {
-    #     'title': 'test_title',
-    #     'body': 'test_body'
-    # }
-    # gorest.create_post(user=desired_id, data=data)
 
-    # user_data = gorest.get_userdata(user_id=desired_id)
-    # data = {
-    #     'body': 'test_comment'
-    # }
-    # user_posts = gorest.get_user_posts(user_id=desired_id)
-    # gorest.create_comment(post=user_posts[0]['id'], user=user_data[0], data=data)
+    post_rest.create_post(user=user_rest.search_by_name(name='Test User 9')[0], title='test_title', body='test_body')
 
-    # data = {
-    #     'title': 'test_todo',
-    # }
-    # gorest.create_todo(user=desired_id, data=data)
+    comment_rest.create_comment(
+        post=post_rest.get_user_posts(user_id=user_rest.search_by_name(name='Test User 9')[0])[0]['id'],
+        user=user_rest.get_userdata(user_id=user_rest.search_by_name(name='Test User 9')[0])[0],
+        body='test_comment'
+    )
+
+    todo_rest.create_todo(user=user_rest.search_by_name(name='Test User 9')[0], title='todo_title')
 
     # 8
-    # data = {
-    #     'email': 'test_email@test.com'
-    # }
-    # gorest.patch(resource='users', target=desired_id, data=data)
+
+    user_rest.modify_user(target=user_rest.search_by_name(name='Test User 9')[0], email='test_email@test.com')
 
     # 9
 
-    # result = gorest.get(resource='todos')
-    # result = dict_order(result, order_by=take_duedate)
-    # print(json_to_table(result))
+    print(json_to_table(dict_order(todo_rest.retrieve_todos(), order_by=take_duedate)))
